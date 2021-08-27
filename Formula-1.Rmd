@@ -1,0 +1,6 @@
+---
+title: "Formula 1 Championship"
+author: "Vish"
+date: "27/08/2021"
+output: html_document
+---
