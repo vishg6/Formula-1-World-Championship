@@ -10,9 +10,8 @@ output: html_document
 
 ```{r library, warning=FALSE, include=FALSE}
 library(plotly)
-
-
-
+library(viridis)
+library(tidyverse)
 ```
 
 ## Set directory
@@ -41,6 +40,14 @@ seasons <- read.csv(paste0(data.folder,"/seasons.csv"))
 status <- read.csv(paste0(data.folder,"/status.csv"))
 ```
 
+```{r}
+drivers <- drivers %>% 
+  mutate(fullname=(paste(surname,forename, sep = ", ")))
+
+constructor_standings_name <- left_join(constructor_standings,constructors,
+                                        by=c("constructorId"))
+```
+
 
 ```{r}
 str(races)
@@ -55,6 +62,7 @@ races_1 <- races %>%
   rename(Total_Races= n)
 ```
 
+
 ```{r}
 races_join1 <- left_join(races_1, circuits,
                          by =c("circuitId"))
@@ -66,7 +74,8 @@ world_map <- map_data("world")
 races_plot1 <- ggplot() +
   geom_polygon(data = world_map, aes(x=long, y = lat, group = group), fill="darkgreen", alpha=0.3) +
   geom_point(data=races_join1, aes(x=lng, y=lat, colour=Total_Races, 
-                      text = paste(" Races:",Total_Races,"\n",name.y," \n",location,", ",country)))
+                      text = paste(" Races:",Total_Races,"\n",name.y," \n",location,", ",country)))+
+ scale_color_viridis(option="magma", trans="log",name="Total Races", breaks =c(1,5,10,30,60))
   
 
 
@@ -77,7 +86,48 @@ fig1
 ## Drivers 
 
 
+```{r}
+driverstart_join1 <- left_join(driver_standings, drivers,
+                         by =c("driverId"))
 
+driverstart_join1 <- driverstart_join1 %>% 
+  group_by(driverId) %>% 
+  mutate(race_starts=n()) %>% 
+  mutate(fullname=(paste(forename, surname,sep = " ")))
+```
 
+```{r}
+driverstart_plot <- ggplot() +
+  geom_bar(data=driverstart_join1,aes(y=reorder(fullname,race_starts),fill=nationality,stat="count"))
 
+fig2 <- ggplotly(driverstart_plot)
+fig2
+  
+```
+
+```{r}
+driver_results_join1 <- left_join(results,drivers,
+                                  by=c("driverId"))
+driver_results_join2 <- left_join(driver_results_join1,constructors,
+                                  by=c("constructorId"))
+```
+
+```{r}
+driver_results_join2_win <- driver_results_join2 %>% 
+  filter(position=="1") %>% 
+   group_by(driverId, constructorId) %>% 
+   mutate(wins=n())
+  
+```
+```{r}
+driverstart_win_plot <- driver_results_join2_win %>% 
+  count(fullname, name) %>% 
+  ggplot() +
+  geom_col(aes(x=reorder(fullname,n,sum),y=n, fill=name))+
+  coord_flip()
+
+fig3 <- ggplotly(driverstart_win_plot)
+fig3
+  
+```
 
