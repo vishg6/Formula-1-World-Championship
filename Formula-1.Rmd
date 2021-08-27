@@ -4,3 +4,80 @@ author: "Vish"
 date: "27/08/2021"
 output: html_document
 ---
+
+
+
+
+```{r library, warning=FALSE, include=FALSE}
+library(plotly)
+
+
+
+```
+
+## Set directory
+
+```{r}
+pwd <- getwd()
+myfiles <- "Formula1_Data"
+data.folder <- paste0(pwd,"/",myfiles)
+```
+
+## Import files
+
+```{r}
+circuits <- read.csv(paste0(data.folder,"/circuits.csv"))
+constructor_results <- read.csv(paste0(data.folder,"/constructor_results.csv"))
+constructor_standings <- read.csv(paste0(data.folder,"/constructor_standings.csv"))
+constructors <- read.csv(paste0(data.folder,"/constructors.csv"))
+driver_standings <- read.csv(paste0(data.folder,"/driver_standings.csv"))
+drivers <- read.csv(paste0(data.folder,"/drivers.csv"))
+lap_times <- read.csv(paste0(data.folder,"/lap_times.csv"))
+pit_stops <- read.csv(paste0(data.folder,"/pit_stops.csv"))
+qualifying <- read.csv(paste0(data.folder,"/qualifying.csv"))
+races <- read.csv(paste0(data.folder,"/races.csv"))
+results <- read.csv(paste0(data.folder,"/results.csv"))
+seasons <- read.csv(paste0(data.folder,"/seasons.csv"))
+status <- read.csv(paste0(data.folder,"/status.csv"))
+```
+
+
+```{r}
+str(races)
+```
+
+## Circuits
+
+```{r}
+races_1 <- races %>% 
+  group_by(name, circuitId) %>% 
+  count(name) %>% 
+  rename(Total_Races= n)
+```
+
+```{r}
+races_join1 <- left_join(races_1, circuits,
+                         by =c("circuitId"))
+```
+
+
+```{r}
+world_map <- map_data("world")
+races_plot1 <- ggplot() +
+  geom_polygon(data = world_map, aes(x=long, y = lat, group = group), fill="darkgreen", alpha=0.3) +
+  geom_point(data=races_join1, aes(x=lng, y=lat, colour=Total_Races, 
+                      text = paste(" Races:",Total_Races,"\n",name.y," \n",location,", ",country)))
+  
+
+
+fig1 <- ggplotly(races_plot1, tooltip="text")
+fig1
+```
+
+## Drivers 
+
+
+
+
+
+
