@@ -121,13 +121,37 @@ driver_results_join2_win <- driver_results_join2 %>%
 ```
 ```{r}
 driverstart_win_plot <- driver_results_join2_win %>% 
-  count(fullname, name) %>% 
-  ggplot() +
-  geom_col(aes(x=reorder(fullname,n,sum),y=n, fill=name))+
-  coord_flip()
+  count(fullname, name,wins,surname) %>% 
+    ggplot() +
+      geom_col(aes(x=reorder(fullname,n,sum),y=n, fill=name,text = paste(surname,"",wins, "\n",name))) +
+      coord_flip()  
+      #text = paste(" Races:",Total_Races,"\n",name.y," \n",location,", ",country)))+
 
-fig3 <- ggplotly(driverstart_win_plot)
+fig3 <- ggplotly(driverstart_win_plot,  tooltip="text")
 fig3
   
+```
+
+## Pit Stops
+
+```{r}
+pitstop_race_join1 <- left_join(pit_stops,races,
+                                  by=c("raceId"))
+
+pitstop_race_join2 <- pitstop_race_join1 %>% 
+  filter(milliseconds<100000) %>% 
+  group_by(raceId) %>% 
+  mutate(slowest.pit = max(milliseconds, na.rm = T)/1000,
+         fastest.pit=min(milliseconds, na.rm = T)/1000)
+```
+
+```{r}
+pitstop_race_plot <- ggplot() +
+    geom_point(data=pitstop_race_join2,aes(x=year, y=slowest.pit),colour="red") +
+    geom_point(data=pitstop_race_join2,aes(x=year, y=fastest.pit),colour="green") +
+    facet_wrap(~name)
+
+fig4 <- ggplotly(pitstop_race_plot)
+fig4
 ```
 
